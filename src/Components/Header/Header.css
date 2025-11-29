@@ -1,0 +1,80 @@
+:root {
+  --header-height: 60px; /* compact header height */
+}
+
+/* Fixed header */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--header-height);
+  background: var(--primary);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  z-index: 1000;
+  color: var(--text); /* ensures text matches theme */
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+/* Home link */
+.header-home {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 6px 10px; /* smaller for compact header */
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.header-home:hover {
+  background: var(--accent);
+}
+
+/* Container for right-side links */
+.header-links {
+  display: flex;
+  gap: 12px;
+  align-items: center; /* aligns theme button with links */
+}
+
+/* Login/Register links */
+.header-link {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 6px 10px; /* smaller padding */
+  border-radius: 6px;
+  transition: background 0.2s ease;
+  font-size: 14px;
+}
+
+.header-link:hover {
+  background: var(--accent);
+}
+
+/* Theme toggle button */
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem; /* slightly smaller */
+  cursor: pointer;
+  color: var(--text);
+  padding: 6px 10px; /* smaller for compact look */
+  border-radius: 6px;
+  transition: background 0.2s ease, color 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--accent);
+}

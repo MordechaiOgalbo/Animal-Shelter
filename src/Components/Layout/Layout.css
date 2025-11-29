@@ -1,0 +1,26 @@
+/* Root layout container */
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg); /* matches your theme system */
+}
+
+/* Header height variable */
+:root {
+  --header-height: 90px; /* your header size */
+}
+
+/* Main content area */
+.page-content {
+  flex: 1; /* fill remaining space between header + footer */
+
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  padding-top: var(--header-height); 
+  /* needed because your header is fixed! */
+  
+  box-sizing: border-box;
+}
