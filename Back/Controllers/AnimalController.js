@@ -8,3 +8,10 @@ export const animalCaller = async (req, res) => {
     res.status(500).json({ error: "Server Error" });
   }
 };
+export const animalExport =async (req,res) => {
+  try {
+    const {id} = req.params;
+  } catch (error) {
+    res.status(500).json({ error: "Server Error" });
+  }
+}

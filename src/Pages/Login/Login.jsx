@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import "./Login.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { FaEyeSlash } from "react-icons/fa";
+import { FaEye } from "react-icons/fa6";
+
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -12,6 +17,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [submited, setSubmited] = useState(false);
+  const navigate = useNavigate();
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -31,13 +37,19 @@ const Login = () => {
     if (error) {
       return;
     }
-    const res = await axios.post(
-      "http://localhost:5000/api/auth/login",
-      {
-        formData,
-      },
-      { withCredentials: true }
-    );
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        {
+          formData,
+        },
+        { withCredentials: true }
+      );
+      toast.success(res.data);
+      navigate("/");
+    } catch (error) {
+      toast.error(error.response.data.error);
+    }
   };
   useEffect(() => {
     if (submited) {
@@ -65,26 +77,26 @@ const Login = () => {
         </label>
 
         {emailError && <div className="errorMessage">Invalid email adress</div>}
-        <label>
-          Password:
-          <input
-            required
-            type={showPassword ? "text" : "password"}
-            name="password"
-            placeholder="Enter your password"
-            value={formData.password}
-            onChange={handleChange}
-          />
-        </label>
+<label>
+  Password:
+  <div className="password-field">
+    <input
+      required
+      type={showPassword ? "text" : "password"}
+      name="password"
+      placeholder="Enter your password"
+      value={formData.password}
+      onChange={handleChange}
+    />
 
-        <div className="show-password-container">
-          <button
-            type="button"
-            onClick={() => setShowPassword((prev) => !prev)}
-          >
-            👁️
-          </button>
-        </div>
+    <span
+      className="toggle-eye"
+      onClick={() => setShowPassword(prev => !prev)}
+    >
+      {showPassword ? <FaEyeSlash /> : <FaEye />}
+    </span>
+  </div>
+</label>
         <div className="checkbox-container">
           <input
             type="checkbox"

@@ -167,3 +167,46 @@
     min-height: auto;
   }
 }
+/* Password requirement box */
+.password-checker {
+  margin-top: 10px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--background));
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+  transition: background 0.3s ease;
+}
+
+/* The list of requirements */
+.password-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Each requirement line */
+.password-item {
+  margin: 6px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Background of the strength bar */
+.password-bar-bg {
+  margin-top: 10px;
+  height: 15px;
+  background-color: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Filling of the strength bar */
+.password-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}

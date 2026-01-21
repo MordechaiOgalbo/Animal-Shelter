@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
     age: { type: Number },
     verified: { type: Boolean, default: false },
     profile_image: { type: String, default: "" },
+    profile_color: { type: String, default: "#3bab7e" },
     last_login: { type: Date },
     reset_token: { type: String },
     reset_token_expiry: { type: Date },

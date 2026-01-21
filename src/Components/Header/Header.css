@@ -1,5 +1,5 @@
 :root {
-  --header-height: 60px; /* compact header height */
+  --header-height: 60px;
 }
 
 /* Fixed header */
@@ -12,18 +12,17 @@
   background: var(--primary);
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   z-index: 1000;
-  color: var(--text); /* ensures text matches theme */
+  color: var(--text);
   transition: background 0.3s ease, color 0.3s ease;
 }
 
 .header-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  height: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* home left, right items right */
   align-items: center;
-  padding: 0 20px;
+  width: 98%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 /* Home link */
@@ -32,49 +31,94 @@
   text-decoration: none;
   font-weight: 700;
   font-size: 16px;
-  padding: 6px 10px; /* smaller for compact header */
-  border-radius: 6px;
-  transition: background 0.2s ease;
+  padding: 6px 10px;
+  margin-left: 20px; /* adjust this value to move Home to the right */
 }
 
-.header-home:hover {
-  background: var(--accent);
-}
-
-/* Container for right-side links */
-.header-links {
+/* Right side container */
+.header-right {
   display: flex;
-  gap: 12px;
-  align-items: center; /* aligns theme button with links */
-}
-
-/* Login/Register links */
-.header-link {
-  color: var(--text);
-  text-decoration: none;
-  font-weight: 600;
-  padding: 6px 10px; /* smaller padding */
-  border-radius: 6px;
-  transition: background 0.2s ease;
-  font-size: 14px;
-}
-
-.header-link:hover {
-  background: var(--accent);
+  align-items: center;
+  gap: 10px;
 }
 
 /* Theme toggle button */
 .theme-toggle-btn {
   background: none;
   border: none;
-  font-size: 1.3rem; /* slightly smaller */
+  font-size: 1.3rem;
   cursor: pointer;
   color: var(--text);
-  padding: 6px 10px; /* smaller for compact look */
+  padding: 6px 10px;
   border-radius: 6px;
-  transition: background 0.2s ease, color 0.3s ease;
 }
 
-.theme-toggle-btn:hover {
-  background: var(--accent);
+/* Avatar */
+.avatar-container {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  color: var(--background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  overflow: hidden;
+}
+
+.avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dropdown menu */
+.avatar-menu {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: var(--background);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.menu-item {
+  padding: 10px 15px;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 500;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item:hover {
+  background-color: var(--accent);
+  color: var(--background);
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
 }

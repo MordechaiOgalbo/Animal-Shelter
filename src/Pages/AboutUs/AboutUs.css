@@ -1,0 +1,125 @@
+/* Page container */
+.about-page {
+  position: relative; /* for floating icons */
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: var(--text);
+  overflow: hidden; /* prevent icons from overflowing page */
+}
+
+/* Page Title */
+.about-title {
+  font-size: 42px;
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: 700;
+  position: relative;
+  z-index: 2; /* text above icons */
+}
+
+/* Intro Paragraph */
+.about-intro {
+  font-size: 18px;
+  max-width: 800px;
+  margin: 0 auto 50px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  background: transparent; /* remove background so icons show behind */
+  padding: 0; /* remove extra padding to not block icons */
+}
+
+/* Sections */
+.about-section {
+  margin-bottom: 50px;
+  padding: 20px 25px;
+  background: rgba(50, 126, 149, 0.08); /* semi-transparent instead of solid */
+  border-radius: 15px;
+  position: relative;
+  z-index: 2; /* above icons but transparent */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Section Titles */
+.section-title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  position: relative; /* make this the reference for the bird */
+  display: inline-block; /* needed so absolute positions properly */
+}
+
+.bird-heading {
+  position: absolute;
+  top: -18px; /* above the text */
+  left: 50%; /* right after heading text */
+  font-size: 28px;
+  opacity: 0.7;
+  color: var(--primary);
+  pointer-events: none;
+  z-index: 3; /* ensure it’s above everything in the section */
+}
+
+/* Lists */
+.about-list {
+  list-style-type: disc;
+  padding-left: 30px;
+}
+
+.about-list li {
+  margin-bottom: 10px;
+}
+
+/* Text paragraphs */
+.section-text {
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+/* Floating icons */
+.floating-icon {
+  position: absolute;
+  font-size: 50px;
+  opacity: 0.15;
+  pointer-events: none;
+  color: var(--primary);
+  z-index: 1; /* make sure they are behind text */
+}
+
+/* Optional: different rotations */
+.icon-1 { top: 10%; left: 5%; transform: rotate(-15deg); }
+.icon-2 { top: 20%; right: 10%; transform: rotate(10deg); }
+.icon-3 { bottom: 15%; left: 15%; transform: rotate(20deg); }
+.icon-4 { bottom: 10%; right: 5%; transform: rotate(-20deg); }
+
+.bird-1 { top: 5%; left: 40%; transform: rotate(-5deg); }
+.bird-2 { top: 25%; right: 35%; transform: rotate(8deg); }
+
+.cat-1 { top: 60%; left: 20%; transform: rotate(-10deg); }
+.dog-1 { bottom: 5%; left: 50%; transform: rotate(15deg); }
+.squirrel-1 { top: 40%; right: 20%; transform: rotate(-8deg); }
+.frog-1 { bottom: 0%; left: 80%; transform: rotate(0deg); }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .about-title {
+    font-size: 36px;
+  }
+  .section-title {
+    font-size: 24px;
+  }
+  .about-intro {
+    font-size: 16px;
+  }
+  .section-text {
+    font-size: 15px;
+  }
+
+  /* Scale down icons on smaller screens */
+  .floating-icon {
+    font-size: 35px;
+  }
+}
