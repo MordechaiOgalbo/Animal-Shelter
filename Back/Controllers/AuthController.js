@@ -40,6 +40,7 @@ export const register = async (req, res) => {
   }
 };
 export const login = async (req, res) => {
+  try{
   const { email, password, remember } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: "fill all the fields" });
@@ -61,11 +62,15 @@ export const login = async (req, res) => {
     httpOnly: true,
     secure: process.env.COOKIE_SAMESITE === "none",
     sameSite: process.env.COOKIE_SAMESITE || "lax",
-    maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 2 * 60 * 60 * 1000,
+    maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 2 * 60 * 60 * 1000,
     path: "/",
   });
   res.status(200).json({
       message: `Welcome ${user_name}`
       },
-    );
+    );}
+    catch (error) {
+    res.status(500).json({ error: "Server Error" });
+  }
+
 };
