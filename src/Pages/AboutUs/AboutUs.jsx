@@ -1,5 +1,6 @@
 import React from "react";
 import "./AboutUs.css";
+import { Link } from "react-router-dom";
 import { IoPaw } from "react-icons/io5";
 import { PiBirdFill } from "react-icons/pi";
 import { FaCat } from "react-icons/fa";
@@ -128,11 +129,19 @@ const AboutUs = () => {
       <div className="about-section">
         <h3 className="section-title">Join Us</h3>
         <p className="section-text">
-          Whether you’re considering adoption, fostering, donating, or simply
+          Whether you're considering adoption, fostering, donating, or simply
           spreading awareness — your support helps give animals a better
           tomorrow! Together, we can make a real difference, one rescued life at
           a time.
         </p>
+        <div className="join-us-links">
+          <Link to="/volunteer" className="join-link volunteer-link">
+            Volunteer With Us
+          </Link>
+          <Link to="/donate" className="join-link donate-link">
+            Make a Donation
+          </Link>
+        </div>
       </div>
     </section>
   );

@@ -45,10 +45,16 @@ const Login = () => {
         },
         { withCredentials: true }
       );
-      toast.success(res.data);
+      // Store user data in localStorage for Header component
+      if (res.data.user) {
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+      }
+      toast.success(res.data.message || "Login successful");
       navigate("/");
+      // Reload page to update header
+      window.location.reload();
     } catch (error) {
-      toast.error(error.response.data.error);
+      toast.error(error.response?.data?.error || "Login failed");
     }
   };
   useEffect(() => {

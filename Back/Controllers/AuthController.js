@@ -4,7 +4,18 @@ import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
   try {
-    const { user_name, email, password, phone_number, profile_color, profile_image } = req.body;
+    const { 
+      user_name, 
+      email, 
+      password, 
+      phone_number, 
+      profile_color, 
+      profile_text_color,
+      profile_image,
+      age,
+      bio,
+      address
+    } = req.body;
 
     // Check required fields
     if (!user_name || !email || !password) {
@@ -28,9 +39,14 @@ export const register = async (req, res) => {
       user_name,
       email,
       password: hashedPassword,
-      phone_number,
+      phone_number: phone_number || undefined,
+      age: age || undefined,
       profile_color: profile_color || "#3bab7e",
-      profile_image: profile_image || "",        
+      profile_text_color: profile_text_color || "#ffffff",
+      profile_image: profile_image || "",
+      bio: bio || "",
+      address: address || undefined,
+      last_login: new Date(),
     });
 
     await newUser.save();
@@ -40,6 +56,10 @@ export const register = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({ error: `${field} already exists` });
+    }
     res.status(500).json({ error: "Server Error" });
   }
 };
@@ -57,10 +77,18 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
+    if (!user.is_active) {
+      return res.status(403).json({ error: "Account is deactivated. Please contact support." });
+    }
+
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(400).json({ error: "Invalid email or password" });
     }
+
+    // Update last login
+    user.last_login = new Date();
+    await user.save();
 
     const token = jwt.sign(
       { userId: user._id, role: user.role },
@@ -70,7 +98,7 @@ export const login = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: "none",
+      secure: false, // Set to false for localhost development
       sameSite: "lax",
       maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 2 * 60 * 60 * 1000,
       path: "/",
@@ -82,7 +110,9 @@ export const login = async (req, res) => {
         user_name: user.user_name,
         email: user.email,
         profile_color: user.profile_color,
+        profile_text_color: user.profile_text_color,
         profile_image: user.profile_image,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -95,7 +125,7 @@ export const logout = (req, res) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
-      secure: "none",
+      secure: false, // Set to false for localhost development
       sameSite: "lax",
       path: "/",
     });
