@@ -154,4 +154,127 @@ export const changePassword = async (req, res) => {
   }
 };
 
+// Delete user account
+export const deleteUser = async (req, res) => {
+  try {
+    // Try to get username from body first, then from query
+    const username = req.body?.username || req.query?.username;
+
+    const user = await User.findById(req.userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Only allow users with role "user" to delete their account
+    if (user.role !== "user") {
+      return res.status(403).json({ error: "Only regular users can delete their accounts" });
+    }
+
+    // Verify username matches (case-sensitive)
+    if (!username || username !== user.user_name) {
+      return res.status(400).json({ error: "Username does not match" });
+    }
+
+    // Delete the user
+    await User.findByIdAndDelete(req.userId);
+
+    res.json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+// Add animal to favorites
+export const addToFavorites = async (req, res) => {
+  try {
+    const { animalId } = req.body;
+
+    if (!animalId) {
+      return res.status(400).json({ error: "Animal ID is required" });
+    }
+
+    const user = await User.findById(req.userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if already in favorites
+    if (user.favorites.includes(animalId)) {
+      return res.status(400).json({ error: "Animal already in favorites" });
+    }
+
+    // Add to favorites
+    user.favorites.push(animalId);
+    await user.save();
+
+    res.json({ message: "Animal added to favorites", favorites: user.favorites });
+  } catch (error) {
+    console.error("Error adding to favorites:", error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+// Remove animal from favorites
+export const removeFromFavorites = async (req, res) => {
+  try {
+    const { animalId } = req.body;
+
+    if (!animalId) {
+      return res.status(400).json({ error: "Animal ID is required" });
+    }
+
+    const user = await User.findById(req.userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Remove from favorites
+    user.favorites = user.favorites.filter(
+      (favId) => favId.toString() !== animalId.toString()
+    );
+    await user.save();
+
+    res.json({ message: "Animal removed from favorites", favorites: user.favorites });
+  } catch (error) {
+    console.error("Error removing from favorites:", error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+// Get user favorites with animal details
+export const getFavorites = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Get the favorite IDs before populating
+    const favoriteIds = user.favorites || [];
+    
+    // Populate favorites
+    await user.populate("favorites");
+    
+    // Map favorites, preserving IDs for removed animals
+    const favorites = favoriteIds.map((id, index) => {
+      const populatedAnimal = user.favorites[index];
+      // If populate returned null (animal deleted), mark as removed
+      if (!populatedAnimal || !populatedAnimal._id) {
+        return { _id: id.toString(), removed: true };
+      }
+      return populatedAnimal;
+    });
+
+    res.json({ favorites });
+  } catch (error) {
+    console.error("Error fetching favorites:", error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
 export { verifyToken };

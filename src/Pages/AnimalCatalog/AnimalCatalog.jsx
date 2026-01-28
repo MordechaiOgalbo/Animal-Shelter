@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 import "./AnimalCatalog.css"; 
 import { Link } from "react-router-dom";
 
@@ -18,6 +19,8 @@ const AnimalCatalog = () => {
   const [fosterDurationMax, setFosterDurationMax] = useState("");
   const [fosterDurationTimeframe, setFosterDurationTimeframe] = useState("All");
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [user, setUser] = useState(null);
+  const [favorites, setFavorites] = useState([]);
   const cardsPerPage = 12;
 
   useEffect(() => {
@@ -30,6 +33,30 @@ const AnimalCatalog = () => {
       }
     };
     fetchAnimals();
+  }, []);
+
+  useEffect(() => {
+    // Check if user is logged in and fetch favorites
+    const checkUserAndFavorites = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/user/me", {
+          withCredentials: true,
+        });
+        setUser(res.data);
+        
+        // Fetch favorites
+        const favoritesRes = await axios.get("http://localhost:5000/api/user/me/favorites", {
+          withCredentials: true,
+        });
+        const favoriteIds = favoritesRes.data.favorites.map(fav => fav._id || fav);
+        setFavorites(favoriteIds);
+      } catch (error) {
+        // User not logged in
+        setUser(null);
+        setFavorites([]);
+      }
+    };
+    checkUserAndFavorites();
   }, []);
 
   // Get unique values for filters
@@ -355,46 +382,98 @@ const AnimalCatalog = () => {
       ) : (
         <>
           <div className="catalog-cards">
-            {currentAnimals.map((animal) => (
-              <Link 
-                key={animal._id} 
-                to={`/animal/${animal._id}`} 
-                className="catalog-card-link"
-              >
-                <div className="catalog-card">
-                  <div className="catalog-image">
-                    <img src={animal.img} alt={animal.name} />
-                    <div className="card-overlay">
-                      <span className="card-adoption-type">
-                        {animal.adoption_type === "Permanent" ? "Permanent Adoption" : 
-                         animal.adoption_type === "Foster" ? "Foster Care" : 
-                         animal.adoption_type || "Adoption"}
-                      </span>
-                      {(animal.adoption_type === "Foster" || animal.adoption_type === "Foster Care") && animal.foster_duration && (
-                        <span className="card-foster-duration">
-                          ⏱️ {animal.foster_duration}
-                        </span>
-                      )}
+            {currentAnimals.map((animal) => {
+              const isFavorite = favorites.includes(animal._id);
+              
+              const handleToggleFavorite = async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (!user) {
+                  toast.error("Please login to add animals to your favorites");
+                  return;
+                }
+                
+                try {
+                  if (isFavorite) {
+                    await axios.delete("http://localhost:5000/api/user/me/favorites", {
+                      data: { animalId: animal._id },
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      withCredentials: true,
+                    });
+                    setFavorites(favorites.filter(id => id !== animal._id));
+                    toast.success("Removed from Adoption Candidates");
+                  } else {
+                    await axios.post("http://localhost:5000/api/user/me/favorites", {
+                      animalId: animal._id,
+                    }, {
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      withCredentials: true,
+                    });
+                    setFavorites([...favorites, animal._id]);
+                    toast.success("Added to Adoption Candidates");
+                  }
+                } catch (error) {
+                  console.error("Error toggling favorite:", error);
+                  toast.error(error.response?.data?.error || "Failed to update favorites");
+                }
+              };
+
+              return (
+                <div key={animal._id} className="catalog-card-wrapper">
+                  <Link 
+                    to={`/animal/${animal._id}`} 
+                    className="catalog-card-link"
+                  >
+                    <div className="catalog-card">
+                      <div className="catalog-image">
+                        {user && (
+                          <button
+                            onClick={handleToggleFavorite}
+                            className={`favorite-heart-btn ${isFavorite ? "favorited" : ""}`}
+                            title={isFavorite ? "Remove from Adoption Candidates" : "Add to Adoption Candidates"}
+                          >
+                            {isFavorite ? "❤️" : "🤍"}
+                          </button>
+                        )}
+                        <img src={animal.img} alt={animal.name} />
+                        <div className="card-overlay">
+                          <span className="card-adoption-type">
+                            {animal.adoption_type === "Permanent" ? "Permanent Adoption" : 
+                             animal.adoption_type === "Foster" ? "Foster Care" : 
+                             animal.adoption_type || "Adoption"}
+                          </span>
+                          {(animal.adoption_type === "Foster" || animal.adoption_type === "Foster Care") && animal.foster_duration && (
+                            <span className="card-foster-duration">
+                              ⏱️ {animal.foster_duration}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="card-content">
+                        <h3>{animal.name || "Unnamed"}</h3>
+                        <p className="card-type">{animal.type || ""}</p>
+                        <div className="card-details">
+                          {animal.category && <span className="card-badge">{animal.category}</span>}
+                          <span className="card-badge">{animal.animal || animal.type || ""}</span>
+                          {animal.breed && <span className="card-badge">Breed: {animal.breed}</span>}
+                          {animal.age && <span className="card-badge">Age: {animal.age}</span>}
+                          {animal.gender && (
+                            <span className="card-badge">
+                              Gender: {animal.gender}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="card-content">
-                    <h3>{animal.name || "Unnamed"}</h3>
-                    <p className="card-type">{animal.type || ""}</p>
-                    <div className="card-details">
-                      {animal.category && <span className="card-badge">{animal.category}</span>}
-                      <span className="card-badge">{animal.animal || animal.type || ""}</span>
-                      {animal.breed && <span className="card-badge">Breed: {animal.breed}</span>}
-                      {animal.age && <span className="card-badge">Age: {animal.age}</span>}
-                      {animal.gender && (
-                        <span className="card-badge">
-                          Gender: {animal.gender}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  </Link>
                 </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
 
           {totalPages > 1 && (

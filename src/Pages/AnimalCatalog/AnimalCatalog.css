@@ -364,9 +364,14 @@
   z-index: 1;
 }
 
+.catalog-card-wrapper {
+  position: relative;
+}
+
 .catalog-card-link {
   text-decoration: none;
   color: inherit;
+  display: block;
 }
 
 .catalog-card {
@@ -498,11 +503,75 @@
   opacity: 0.3;
 }
 
+.card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
 .card-content h3 {
-  margin: 0 0 8px 0;
+  margin: 0;
   font-size: 1.3rem;
   color: var(--text);
   font-weight: 700;
+  flex: 1;
+}
+
+.favorite-heart-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+}
+
+.favorite-heart-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.favorite-heart-btn.favorited {
+  background: rgba(255, 192, 203, 0.9);
+}
+
+.favorite-heart-btn-small {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.favorite-heart-btn-small:hover {
+  background: color-mix(in srgb, var(--accent) 20%, var(--background));
+  transform: scale(1.1);
+}
+
+.favorite-heart-btn-small.favorited {
+  animation: heartBeat 0.3s ease;
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
 }
 
 .card-type {

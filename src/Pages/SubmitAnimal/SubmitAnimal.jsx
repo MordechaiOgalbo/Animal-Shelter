@@ -12,14 +12,14 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 // Autocomplete Input Component
-const AutocompleteInput = ({ 
-  name, 
-  value, 
-  onChange, 
-  placeholder, 
-  suggestions, 
+const AutocompleteInput = ({
+  name,
+  value,
+  onChange,
+  placeholder,
+  suggestions,
   required = false,
-  label 
+  label
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
@@ -173,7 +173,7 @@ const SubmitAnimal = () => {
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
-    
+
     if (type === "file") {
       const file = files[0];
       setFormData({
@@ -193,10 +193,10 @@ const SubmitAnimal = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Handle name: if empty, set to "unsure"
     const nameValue = formData.name.trim() || "unsure";
-    
+
     try {
       // Convert and compress image file to data URL if present
       let imgUrl = "";
@@ -288,8 +288,8 @@ const SubmitAnimal = () => {
 
       {/* Intro */}
       <p className="submit-animal-intro">
-        Do you have an animal that needs a new home? <strong>Noah's Ark</strong> can help! 
-        Fill out the form below to submit an animal for adoption. We'll review your submission 
+        Do you have an animal that needs a new home? <strong>Noah's Ark</strong> can help!
+        Fill out the form below to submit an animal for adoption. We'll review your submission
         and add it to our catalog to help find the perfect home.
       </p>
 
@@ -316,7 +316,7 @@ const SubmitAnimal = () => {
           {/* Basic Information */}
           <div className="form-section">
             <h4 className="form-section-title">Basic Information</h4>
-            
+
             <div className="form-group">
               <label htmlFor="name">Animal Name *</label>
               <input
@@ -456,7 +456,7 @@ const SubmitAnimal = () => {
           {/* Life Expectancy */}
           <div className="form-section">
             <h4 className="form-section-title">Life Expectancy <span className="optional-label">(Optional)</span></h4>
-            
+
             <div className="form-group">
               <label htmlFor="life_expectancy_captivity">In Captivity</label>
               <input
@@ -485,7 +485,7 @@ const SubmitAnimal = () => {
           {/* Health & Behavior */}
           <div className="form-section">
             <h4 className="form-section-title">Health & Behavior <span className="optional-label">(Optional)</span></h4>
-            
+
             <div className="form-group">
               <label htmlFor="medical_condition">Medical Condition</label>
               <textarea
@@ -536,7 +536,7 @@ const SubmitAnimal = () => {
           {/* Care Requirements */}
           <div className="form-section">
             <h4 className="form-section-title">Care Requirements <span className="optional-label">(Optional)</span></h4>
-            
+
             <div className="form-group">
               <label htmlFor="care_food">Food Requirements</label>
               <textarea
@@ -602,7 +602,7 @@ const SubmitAnimal = () => {
           {/* Adoption Details */}
           <div className="form-section">
             <h4 className="form-section-title">Adoption Details</h4>
-            
+
             <div className="form-group">
               <label htmlFor="adoption_type">Adoption Type *</label>
               <select
@@ -670,7 +670,7 @@ const SubmitAnimal = () => {
           {/* Image Upload */}
           <div className="form-section">
             <h4 className="form-section-title">Animal Photo <span className="optional-label">(Optional)</span></h4>
-            
+
             <div className="form-group">
               <label htmlFor="img">Upload Photo</label>
               <p className="image-upload-note">
@@ -718,7 +718,6 @@ const SubmitAnimal = () => {
           </span>
         </h3>
         <ul className="submit-animal-list">
-          <li>All submissions are reviewed before being added to our catalog</li>
           <li>Please provide accurate and complete information to help find the best home</li>
           <li>We may contact you for additional information or clarification</li>
           <li>Photos help significantly in finding homes for animals</li>

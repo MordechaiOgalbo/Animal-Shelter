@@ -10,10 +10,84 @@
 .profile-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
-  padding-bottom: 20px;
+  align-items: flex-end;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  gap: 20px;
+}
+
+/* Browser Tabs Style */
+.browser-tabs {
+  display: flex;
+  gap: 2px;
+  background: color-mix(in srgb, var(--accent) 20%, var(--background));
+  padding: 8px 8px 0 8px;
+  border-radius: 8px 8px 0 0;
   border-bottom: 2px solid var(--accent);
+  flex: 1;
+  overflow-x: auto;
+}
+
+.browser-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: color-mix(in srgb, var(--accent) 15%, var(--background));
+  border: none;
+  border-top: 2px solid transparent;
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
+  border-radius: 8px 8px 0 0;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+  min-width: fit-content;
+  opacity: 0.7;
+}
+
+.browser-tab:hover {
+  background: color-mix(in srgb, var(--accent) 25%, var(--background));
+  opacity: 0.9;
+}
+
+.browser-tab.active {
+  background: var(--background);
+  border-top: 2px solid var(--primary);
+  border-left: 1px solid var(--accent);
+  border-right: 1px solid var(--accent);
+  color: var(--text);
+  opacity: 1;
+  z-index: 1;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tab-icon {
+  font-size: 1rem;
+}
+
+.tab-title {
+  font-weight: 500;
+}
+
+.tab-badge {
+  background: var(--primary);
+  color: var(--background);
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.browser-tab.active .tab-badge {
+  background: var(--accent);
 }
 
 .profile-header h1 {
@@ -67,9 +141,36 @@
 }
 
 .profile-content {
+  background: var(--background);
+  border: 2px solid var(--accent);
+  border-top: none;
+  border-radius: 0 0 15px 15px;
+  padding: 40px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 500px;
+}
+
+.profile-tab-content {
   display: grid;
   grid-template-columns: 300px 1fr;
   gap: 40px;
+}
+
+.delete-account-section {
+  grid-column: 1 / -1;
+  margin-top: 40px;
+  width: 100%;
+  clear: both;
+}
+
+.tab-content {
+  display: contents;
+}
+
+.candidates-tab-content {
+  display: block;
+  width: 100%;
+  grid-column: 1 / -1;
 }
 
 .profile-sidebar {
@@ -327,8 +428,19 @@
 @media (max-width: 768px) {
   .profile-header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  .browser-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .browser-tab {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
   }
 
   .form-grid {
@@ -372,117 +484,240 @@
     flex-direction: column;
   }
 
-.save-button,
-.cancel-button {
-  width: 100%;
-}
+  .save-button,
+  .cancel-button {
+    width: 100%;
+  }
 
-/* Profile Picture Upload in Appearance Section */
-.profile-picture-upload-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-}
+  /* Profile Picture Upload in Appearance Section */
+  .profile-picture-upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
 
-.profile-picture-preview,
-.profile-picture-placeholder {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid var(--primary);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
+  .profile-picture-preview,
+  .profile-picture-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
 
-.profile-picture-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-  font-weight: bold;
-  color: var(--background);
-}
+  .profile-picture-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--background);
+  }
 
-.profile-picture-upload-label {
-  padding: 10px 20px;
-  background: var(--primary);
-  color: var(--background);
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  text-align: center;
-  display: inline-block;
-}
+  .profile-picture-upload-label {
+    padding: 10px 20px;
+    background: var(--primary);
+    color: var(--background);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-align: center;
+    display: inline-block;
+  }
 
-.profile-picture-upload-label:hover {
-  background: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+  .profile-picture-upload-label:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
 
-.profile-picture-upload-input {
-  display: none;
-}
+  .profile-picture-upload-input {
+    display: none;
+  }
 
-/* Account Settings Section */
-.account-settings-section {
-  margin-top: 40px;
-  padding-top: 30px;
-  border-top: 2px solid var(--accent);
-}
+  /* Account Settings Section */
+  .account-settings-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px solid var(--accent);
+  }
 
 .account-actions {
   display: flex;
   gap: 15px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.change-password-button,
-.logout-button {
+  .change-password-button,
+  .logout-button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .change-password-button {
+    background: var(--primary);
+    color: var(--background);
+  }
+
+  .change-password-button:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .logout-button {
+    background: #ff4444;
+    color: var(--background);
+  }
+
+  .logout-button:hover {
+    background: #cc0000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .password-change-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 500px;
+  }
+
+  .password-input {
+    padding: 12px;
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--background);
+    color: var(--text);
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+    font-family: inherit;
+    width: 100%;
+  }
+
+  .password-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 8px rgba(59, 173, 128, 0.35);
+  }
+
+  .password-form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+  }
+
+  @media (max-width: 768px) {
+    .account-actions {
+      flex-direction: column;
+    }
+
+    .change-password-button,
+    .logout-button {
+      width: 100%;
+    }
+
+    .password-form-actions {
+      flex-direction: column;
+    }
+
+  .password-form-actions .save-button,
+  .password-form-actions .cancel-button {
+    width: 100%;
+  }
+}
+
+/* Delete Account Section */
+.delete-account-section {
+  grid-column: 1 / -1;
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 3px solid #ff4444;
+  background: color-mix(in srgb, #ff4444 5%, var(--background));
+  border-radius: 15px;
+  padding: 30px;
+  width: 100%;
+  clear: both;
+}
+
+.delete-section-title {
+  color: #ff4444;
+  border-bottom-color: #ff4444;
+}
+
+.delete-account-warning {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: color-mix(in srgb, #ff4444 10%, var(--background));
+  border-left: 4px solid #ff4444;
+  border-radius: 8px;
+}
+
+.warning-text {
+  color: var(--text);
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.warning-text strong {
+  color: #ff4444;
+  font-weight: 600;
+}
+
+.confirmation-text {
+  color: var(--text);
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.confirmation-text strong {
+  color: var(--primary);
+  font-weight: 600;
+  font-family: monospace;
+  font-size: 1.1rem;
+}
+
+.delete-account-button {
   padding: 12px 24px;
-  border: none;
+  border: 2px solid #ff4444;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  background: transparent;
+  color: #ff4444;
 }
 
-.change-password-button {
-  background: var(--primary);
-  color: var(--background);
-}
-
-.change-password-button:hover {
-  background: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.logout-button {
+.delete-account-button:hover {
   background: #ff4444;
   color: var(--background);
-}
-
-.logout-button:hover {
-  background: #cc0000;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgba(255, 68, 68, 0.3);
 }
 
-.password-change-form {
+.delete-account-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
   max-width: 500px;
 }
 
-.password-input {
+.delete-username-input {
   padding: 12px;
-  border: 2px solid var(--accent);
+  border: 2px solid #ff4444;
   border-radius: 8px;
   font-size: 1rem;
   background: var(--background);
@@ -492,35 +727,281 @@
   width: 100%;
 }
 
-.password-input:focus {
+.delete-username-input:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 8px rgba(59, 173, 128, 0.35);
+  border-color: #cc0000;
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.35);
 }
 
-.password-form-actions {
+.username-hint {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.username-hint strong {
+  color: var(--primary);
+  font-family: monospace;
+}
+
+.delete-form-actions {
   display: flex;
   gap: 15px;
   margin-top: 10px;
 }
 
+.confirm-delete-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #ff4444;
+  color: var(--background);
+}
+
+.confirm-delete-button:hover:not(:disabled) {
+  background: #cc0000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 68, 68, 0.4);
+}
+
+.confirm-delete-button:disabled {
+  background: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cancel-delete-button {
+  padding: 12px 24px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+  color: var(--text);
+}
+
+.cancel-delete-button:hover {
+  background: var(--accent);
+  color: var(--background);
+}
+
 @media (max-width: 768px) {
-  .account-actions {
+  .delete-form-actions {
     flex-direction: column;
   }
 
-  .change-password-button,
-  .logout-button {
+  .confirm-delete-button,
+  .cancel-delete-button {
     width: 100%;
   }
+}
 
-  .password-form-actions {
+/* Favorites Section (Adoption Candidates) */
+.favorites-section {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  width: 100%;
+}
+
+.loading-favorites {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.no-favorites {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text);
+}
+
+.no-favorites p {
+  margin: 10px 0;
+  font-size: 1rem;
+}
+
+.favorites-hint {
+  opacity: 0.7;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+/* Favorite cards use catalog-card styling - classes inherit from catalog styles */
+
+.remove-favorite-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-top: 1px solid var(--accent);
+  background: color-mix(in srgb, #ff4444 10%, var(--background));
+  color: #ff4444;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 0 0 20px 20px;
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+}
+
+.remove-favorite-btn:hover {
+  background: #ff4444;
+  color: var(--background);
+}
+
+.catalog-card-wrapper {
+  position: relative;
+}
+
+/* Heart button in favorites (same as catalog) */
+.favorite-heart-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+}
+
+.favorite-heart-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.favorite-heart-btn.favorited {
+  background: rgba(255, 192, 203, 0.9);
+}
+
+/* Undo Notification */
+.undo-notification {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.undo-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: color-mix(in srgb, var(--primary) 15%, var(--background));
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.undo-button {
+  padding: 6px 16px;
+  background: var(--primary);
+  color: var(--background);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 15px;
+}
+
+.undo-button:hover {
+  background: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Removed Animal Card */
+.favorite-card-removed {
+  padding: 40px 20px;
+  text-align: center;
+  background: color-mix(in srgb, var(--accent) 8%, var(--background));
+  border-radius: 15px;
+  border: 2px dashed var(--accent);
+}
+
+.removed-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.removed-animal-name {
+  color: var(--text);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.removed-message {
+  color: var(--primary);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0 0 20px 0;
+}
+
+@media (max-width: 768px) {
+  .favorites-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  .candidates-tab-content {
+    padding: 20px;
+  }
+
+  .animal-name-header {
     flex-direction: column;
+    align-items: flex-start;
   }
 
-  .password-form-actions .save-button,
-  .password-form-actions .cancel-button {
+  .favorite-button {
     width: 100%;
+    justify-content: center;
   }
 }
 }

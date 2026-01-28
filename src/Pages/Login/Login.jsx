@@ -83,26 +83,26 @@ const Login = () => {
         </label>
 
         {emailError && <div className="errorMessage">Invalid email adress</div>}
-<label>
-  Password:
-  <div className="password-field">
-    <input
-      required
-      type={showPassword ? "text" : "password"}
-      name="password"
-      placeholder="Enter your password"
-      value={formData.password}
-      onChange={handleChange}
-    />
+        <label>
+          Password:
+          <div className="password-field">
+            <input
+              required
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+            />
 
-    <span
-      className="toggle-eye"
-      onClick={() => setShowPassword(prev => !prev)}
-    >
-      {showPassword ? <FaEyeSlash /> : <FaEye />}
-    </span>
-  </div>
-</label>
+            <span
+              className="toggle-eye"
+              onClick={() => setShowPassword(prev => !prev)}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
+        </label>
         <div className="checkbox-container">
           <input
             type="checkbox"

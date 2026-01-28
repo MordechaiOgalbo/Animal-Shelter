@@ -8,6 +8,9 @@ const AnimalPage = () => {
   const [animal, setAnimal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   useEffect(() => {
     const fetchAnimal = async () => {
@@ -27,6 +30,67 @@ const AnimalPage = () => {
       fetchAnimal();
     }
   }, [id]);
+
+  useEffect(() => {
+    // Check if user is logged in and fetch favorites
+    const checkUserAndFavorites = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/user/me", {
+          withCredentials: true,
+        });
+        setUser(res.data);
+        
+        // Check if animal is in favorites
+        if (id) {
+          const favoritesRes = await axios.get("http://localhost:5000/api/user/me/favorites", {
+            withCredentials: true,
+          });
+          const favoriteIds = favoritesRes.data.favorites.map(fav => fav._id || fav);
+          setIsFavorite(favoriteIds.includes(id));
+        }
+      } catch (error) {
+        // User not logged in
+        setUser(null);
+        setIsFavorite(false);
+      }
+    };
+    checkUserAndFavorites();
+  }, [id]);
+
+  const handleToggleFavorite = async () => {
+    if (!user || !id) return;
+    
+    setFavoriteLoading(true);
+    try {
+      if (isFavorite) {
+        await axios.delete("http://localhost:5000/api/user/me/favorites", {
+          data: { animalId: id },
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+        setIsFavorite(false);
+        // toast.success("Removed from Adoption Candidates");
+      } else {
+        await axios.post("http://localhost:5000/api/user/me/favorites", {
+          animalId: id,
+        }, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+        setIsFavorite(true);
+        // toast.success("Added to Adoption Candidates");
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      // toast.error(error.response?.data?.error || "Failed to update favorites");
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -63,7 +127,19 @@ const AnimalPage = () => {
           </div>
           
           <div className="animal-basic-info">
-            <h1 className="animal-name">{animal.name || "Unnamed"}</h1>
+            <div className="animal-name-header">
+              <h1 className="animal-name">{animal.name || "Unnamed"}</h1>
+              {user && (
+                <button
+                  onClick={handleToggleFavorite}
+                  disabled={favoriteLoading}
+                  className={`favorite-button ${isFavorite ? "favorited" : ""}`}
+                  title={isFavorite ? "Remove from Adoption Candidates" : "Add to Adoption Candidates"}
+                >
+                  {isFavorite ? "❤️" : "🤍"} {isFavorite ? "In List" : "Add to List"}
+                </button>
+              )}
+            </div>
             <div className="animal-tags">
               {animal.category && <span className="info-tag">{animal.category}</span>}
               {animal.type && <span className="info-tag">{animal.type}</span>}

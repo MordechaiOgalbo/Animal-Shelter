@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { compressImage } from "../../utils/imageCompression";
@@ -35,10 +35,22 @@ const Profile = () => {
     newPassword: "",
     confirmPassword: "",
   });
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [deleteUsername, setDeleteUsername] = useState("");
+  const [favorites, setFavorites] = useState([]);
+  const [favoritesLoading, setFavoritesLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile"); // "profile" or "candidates"
+  const [removedFavorites, setRemovedFavorites] = useState([]); // Track recently removed for undo
 
   useEffect(() => {
     fetchUserProfile();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchFavorites();
+    }
+  }, [user]);
 
   const fetchUserProfile = async () => {
     try {
@@ -185,7 +197,7 @@ const Profile = () => {
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error("New passwords do not match");
       return;
@@ -289,6 +301,151 @@ const Profile = () => {
     }
   };
 
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+
+    // Case-sensitive username check
+    if (deleteUsername !== user.user_name) {
+      toast.error("Username does not match. Please type your username exactly as shown.");
+      return;
+    }
+
+    try {
+      // Use POST instead of DELETE to ensure body is parsed correctly
+      await axios.post("http://localhost:5000/api/user/me/delete", {
+        username: deleteUsername,
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      toast.success("Account deleted successfully");
+      localStorage.removeItem("user");
+      navigate("/");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast.error(error.response?.data?.error || "Failed to delete account");
+    }
+  };
+
+  const fetchFavorites = async () => {
+    try {
+      setFavoritesLoading(true);
+      const res = await axios.get("http://localhost:5000/api/user/me/favorites", {
+        withCredentials: true,
+      });
+      setFavorites(res.data.favorites || []);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      // Don't show error if user is not logged in
+      if (error.response?.status !== 401) {
+        toast.error("Failed to load favorites");
+      }
+    } finally {
+      setFavoritesLoading(false);
+    }
+  };
+
+  const handleRemoveFavorite = async (animalId, animalData) => {
+    try {
+      // Store removed animal for undo BEFORE removing (so we have the data even if list becomes empty)
+      const removedItem = animalData && !animalData.removed && animalData.name 
+        ? { animalId, animalData, timestamp: Date.now() }
+        : null;
+      
+      await axios.delete("http://localhost:5000/api/user/me/favorites", {
+        data: { animalId },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      
+      // Store in state for undo functionality
+      if (removedItem) {
+        setRemovedFavorites(prev => [...prev, removedItem]);
+        
+        // Show toast with undo button
+        const UndoToast = ({ closeToast }) => {
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <span>Removed: {removedItem.animalData.name}</span>
+              <button
+                onClick={() => {
+                  closeToast();
+                  handleUndoRemove(removedItem);
+                }}
+                style={{
+                  padding: '4px 12px',
+                  background: 'white',
+                  color: '#3bab7e',
+                  border: '1px solid #3bab7e',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: '0.9rem',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.background = '#3bab7e';
+                  e.target.style.color = 'white';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'white';
+                  e.target.style.color = '#3bab7e';
+                }}
+              >
+                Undo
+              </button>
+            </div>
+          );
+        };
+        
+        toast.success(<UndoToast />, {
+          autoClose: 10000,
+          closeOnClick: false,
+        });
+        
+        // Auto-remove from undo list after toast expires
+        setTimeout(() => {
+          setRemovedFavorites(prev => prev.filter(item => item.animalId !== animalId));
+        }, 10000);
+      } else {
+        toast.success("Removed from Adoption Candidates");
+      }
+      
+      fetchFavorites();
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      toast.error(error.response?.data?.error || "Failed to remove favorite");
+    }
+  };
+
+  const handleUndoRemove = async (removedItem) => {
+    try {
+      await axios.post("http://localhost:5000/api/user/me/favorites", {
+        animalId: removedItem.animalId,
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      
+      // Remove from undo list
+      setRemovedFavorites(prev => prev.filter(item => item.animalId !== removedItem.animalId));
+      
+      toast.success("Restored to Adoption Candidates");
+      fetchFavorites();
+    } catch (error) {
+      console.error("Error restoring favorite:", error);
+      toast.error(error.response?.data?.error || "Failed to restore favorite");
+    }
+  };
+
   if (loading) {
     return (
       <div className="profile-container">
@@ -310,8 +467,26 @@ const Profile = () => {
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <h1>My Profile</h1>
-        {!editing && (
+        <div className="browser-tabs">
+          <button
+            className={`browser-tab ${activeTab === "profile" ? "active" : ""}`}
+            onClick={() => setActiveTab("profile")}
+          >
+            <span className="tab-icon">👤</span>
+            <span className="tab-title">My Profile</span>
+          </button>
+          <button
+            className={`browser-tab ${activeTab === "candidates" ? "active" : ""}`}
+            onClick={() => setActiveTab("candidates")}
+          >
+            <span className="tab-icon">❤️</span>
+            <span className="tab-title">Adoption Candidates</span>
+            {favorites.length > 0 && (
+              <span className="tab-badge">{favorites.length}</span>
+            )}
+          </button>
+        </div>
+        {activeTab === "profile" && !editing && (
           <button className="edit-button" onClick={() => setEditing(true)}>
             Edit Profile
           </button>
@@ -319,7 +494,9 @@ const Profile = () => {
       </div>
 
       <div className="profile-content">
-        <div className="profile-sidebar">
+        {activeTab === "profile" && (
+          <div className="profile-tab-content">
+            <div className="profile-sidebar">
           <div className="profile-avatar-section">
             {imagePreview ? (
               <img
@@ -605,8 +782,8 @@ const Profile = () => {
 
           <div className="form-section account-settings-section">
             <h2 className="section-title">Account Settings</h2>
-            
-            {!showPasswordChange ? (
+
+            {!showPasswordChange && !showDeleteAccount ? (
               <div className="account-actions">
                 <button
                   type="button"
@@ -622,8 +799,17 @@ const Profile = () => {
                 >
                   Log Out
                 </button>
+                {user && user.role === "user" && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteAccount(true)}
+                    className="delete-account-button"
+                  >
+                    Delete My Account
+                  </button>
+                )}
               </div>
-            ) : (
+            ) : showPasswordChange ? (
               <form onSubmit={handlePasswordChange} className="password-change-form">
                 <div className="form-group">
                   <label>Current Password</label>
@@ -692,9 +878,153 @@ const Profile = () => {
                   </button>
                 </div>
               </form>
-            )}
+            ) : null}
           </div>
+
+          {/* Delete Account Form - Shows when delete button is clicked */}
         </div>
+
+          {/* Delete Account Section - Only for users with role "user" */}
+          {user && user.role === "user" && showDeleteAccount && (
+            <div className="form-section delete-account-section">
+              <h2 className="section-title delete-section-title">Delete Account</h2>
+              <div className="delete-account-warning">
+                <p className="warning-text">
+                  <strong>Warning:</strong> This action cannot be undone. This will permanently delete your account and all associated data.
+                </p>
+                <p className="confirmation-text">
+                  To confirm, please type your username: <strong>{user.user_name}</strong>
+                </p>
+              </div>
+
+              <form onSubmit={handleDeleteAccount} className="delete-account-form">
+                <div className="form-group">
+                  <label>Type your username to confirm deletion</label>
+                  <input
+                    type="text"
+                    value={deleteUsername}
+                    onChange={(e) => setDeleteUsername(e.target.value)}
+                    placeholder={`Type: ${user.user_name}`}
+                    required
+                    className="delete-username-input"
+                    autoComplete="off"
+                  />
+                  <p className="username-hint">
+                    You must type: <strong>{user.user_name}</strong> (case-sensitive)
+                  </p>
+                </div>
+                <div className="delete-form-actions">
+                  <button
+                    type="submit"
+                    className="confirm-delete-button"
+                    disabled={deleteUsername !== user.user_name}
+                  >
+                    Permanently Delete Account
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDeleteAccount(false);
+                      setDeleteUsername("");
+                    }}
+                    className="cancel-delete-button"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
+        )}
+
+        {activeTab === "candidates" && (
+          <div className="tab-content candidates-tab-content">
+            <div className="favorites-section">
+              <h2 className="section-title" style={{ marginBottom: '30px', fontSize: '2rem', color: 'var(--primary)', fontWeight: 700, textAlign: 'center' }}>Adoption Candidates</h2>
+              {favoritesLoading ? (
+                <div className="loading-favorites">Loading favorites...</div>
+              ) : favorites.length === 0 ? (
+                <div className="no-favorites">
+                  <p>You haven't added any animals to your adoption candidates list yet.</p>
+                  <p className="favorites-hint">Visit an animal's page and click the heart icon to add them to your list!</p>
+                </div>
+              ) : (
+                <div className="favorites-grid catalog-cards">
+                    {favorites.map((animal) => {
+                      // Check if animal exists (wasn't deleted/adopted)
+                      // When populate fails, animal will have removed: true or no name
+                      const animalExists = animal && animal._id && animal.name && !animal.removed;
+                      const animalRemoved = !animalExists;
+
+                      return (
+                        <div key={animal?._id || Math.random()} className="catalog-card-wrapper">
+                          {animalRemoved ? (
+                            <div className="catalog-card favorite-card-removed">
+                              <div className="removed-icon">🏠</div>
+                              <h3 className="removed-animal-name">
+                                Animal
+                              </h3>
+                              <p className="removed-message">
+                                This animal has found a home! 🎉
+                              </p>
+                              <button
+                                onClick={() => handleRemoveFavorite(animal?._id || animal, animal)}
+                                className="remove-favorite-btn"
+                              >
+                                Remove from List
+                              </button>
+                            </div>
+                          ) : (
+                            <Link to={`/animal/${animal._id}`} className="catalog-card-link">
+                              <div className="catalog-card favorite-card">
+                                <div className="catalog-image favorite-image">
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleRemoveFavorite(animal._id, animal);
+                                    }}
+                                    className="favorite-heart-btn favorited"
+                                    title="Remove from Adoption Candidates"
+                                  >
+                                    ❤️
+                                  </button>
+                                  <img src={animal.img || "/placeholder.png"} alt={animal.name} />
+                                  <div className="card-overlay favorite-overlay">
+                                    <span className="card-adoption-type favorite-adoption-type">
+                                      {animal.adoption_type === "Permanent" ? "Permanent Adoption" : 
+                                       animal.adoption_type === "Foster" ? "Foster Care" : 
+                                       animal.adoption_type || "Adoption"}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="card-content favorite-content">
+                                  <h3>{animal.name || "Unnamed"}</h3>
+                                  <p className="card-type">{animal.type || ""}</p>
+                                  <div className="card-details favorite-badges">
+                                    {animal.category && <span className="card-badge favorite-badge">{animal.category}</span>}
+                                    <span className="card-badge favorite-badge">{animal.animal || animal.type || ""}</span>
+                                    {animal.breed && <span className="card-badge favorite-badge">Breed: {animal.breed}</span>}
+                                    {animal.age && <span className="card-badge favorite-badge">Age: {animal.age}</span>}
+                                    {animal.gender && (
+                                      <span className="card-badge favorite-badge">
+                                        Gender: {animal.gender}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </Link>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

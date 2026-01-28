@@ -86,11 +86,54 @@
   gap: 20px;
 }
 
+.animal-name-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
 .animal-name {
   font-size: 2.5rem;
   color: var(--primary);
   margin: 0;
   font-weight: 700;
+  flex: 1;
+}
+
+.favorite-button {
+  padding: 10px 20px;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--primary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.favorite-button:hover:not(:disabled) {
+  background: var(--primary);
+  color: var(--background);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.favorite-button.favorited {
+  background: var(--primary);
+  color: var(--background);
+  border-color: var(--primary);
+}
+
+.favorite-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .animal-tags {
