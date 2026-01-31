@@ -3,7 +3,7 @@ import Animal from "../Models/Animal.js";
 export const animalCaller = async (req, res) => {
   try {
     const { search } = req.query;
-    let query = {};
+    let query = { adopted: { $ne: true } }; // Only show non-adopted animals
     
     // If search query is provided, search by name (case-insensitive, partial match)
     if (search) {
@@ -113,6 +113,7 @@ export const createAnimal = async (req, res) => {
       foster_duration: foster_duration || "",
       address: address || "",
       img: imgPath,
+      submitted_by: req.userId || null,
     });
 
     await newAnimal.save();

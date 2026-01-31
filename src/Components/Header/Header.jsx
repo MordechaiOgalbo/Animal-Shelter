@@ -3,12 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import logo from "../../Assets/Noah's-Ark-Logo2.png";
 import "./Header.css";
+import { toast } from "react-toastify";
 
 const Header = () => {
   const [theme, setTheme] = useState("light");
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [hamburgerOpen, setHamburgerOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,10 +36,34 @@ const Header = () => {
     }
   };
 
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const res = await axios.get("http://localhost:5000/api/notifications/me", {
+        withCredentials: true,
+      });
+      setNotifications(res.data.notifications || []);
+      setUnreadCount(res.data.unreadCount || 0);
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (hamburgerOpen && !event.target.closest('.hamburger-btn') && !event.target.closest('.hamburger-menu')) {
         setHamburgerOpen(false);
+      }
+      if (notifOpen && !event.target.closest('.notif-btn') && !event.target.closest('.notif-menu')) {
+        setNotifOpen(false);
       }
     };
 
@@ -43,7 +71,7 @@ const Header = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [hamburgerOpen]);
+  }, [hamburgerOpen, notifOpen]);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -54,6 +82,11 @@ const Header = () => {
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleHamburger = () => setHamburgerOpen(!hamburgerOpen);
+  const toggleNotif = async () => {
+    if (!user) return;
+    if (!notifOpen) await fetchNotifications();
+    setNotifOpen((prev) => !prev);
+  };
 
   const closeHamburger = () => setHamburgerOpen(false);
 
@@ -68,7 +101,67 @@ const Header = () => {
     setUser(null);
     localStorage.removeItem("user");
     setMenuOpen(false);
+    setNotifOpen(false);
+    setNotifications([]);
+    setUnreadCount(0);
     navigate("/");
+  };
+
+  const handleMarkRead = async (notifId) => {
+    try {
+      await axios.put(`http://localhost:5000/api/notifications/me/${notifId}/read`, {}, { withCredentials: true });
+      await fetchNotifications();
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  const handleDeleteNotif = async (notif) => {
+    try {
+      await axios.put(
+        `http://localhost:5000/api/notifications/me/${notif._id}/delete`,
+        {},
+        { withCredentials: true }
+      );
+      await fetchNotifications();
+
+      const UndoToast = ({ closeToast }) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          <span>Notification removed.</span>
+          <button
+            onClick={async () => {
+              closeToast();
+              try {
+                await axios.put(
+                  `http://localhost:5000/api/notifications/me/${notif._id}/restore`,
+                  {},
+                  { withCredentials: true }
+                );
+                await fetchNotifications();
+              } catch (e) {
+                // ignore
+              }
+            }}
+            style={{
+              padding: "4px 12px",
+              background: "white",
+              color: "#3bab7e",
+              border: "1px solid #3bab7e",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontWeight: "600",
+              fontSize: "0.9rem",
+            }}
+          >
+            Undo
+          </button>
+        </div>
+      );
+
+      toast.success(<UndoToast />, { autoClose: 8000, closeOnClick: false });
+    } catch (e) {
+      // ignore
+    }
   };
 
   return (
@@ -117,6 +210,73 @@ const Header = () => {
           <button className="theme-toggle-btn" onClick={toggleTheme}>
             {theme === "light" ? "☀️" : "🌙"}
           </button>
+
+          {user && (
+            <div className="notif-container">
+              <button
+                className="notif-btn"
+                onClick={toggleNotif}
+                aria-label="Notifications"
+                title="Notifications"
+              >
+                🔔
+                {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
+              </button>
+
+              {notifOpen && (
+                <div className="notif-menu">
+                  <div className="notif-menu-header">
+                    <span className="notif-menu-title">Notifications</span>
+                    <Link
+                      to="/profile"
+                      className="notif-menu-link"
+                      onClick={() => {
+                        setNotifOpen(false);
+                        setMenuOpen(false);
+                      }}
+                    >
+                      View all
+                    </Link>
+                  </div>
+
+                  {notifications.length === 0 ? (
+                    <div className="notif-empty">No notifications yet.</div>
+                  ) : (
+                    <div className="notif-list">
+                      {notifications.slice(0, 6).map((n) => (
+                        <div key={n._id} className={`notif-item ${n.read ? "" : "unread"}`}>
+                          <div className="notif-item-main">
+                            <div className="notif-item-title">{n.title}</div>
+                            {n.message && <div className="notif-item-msg">{n.message}</div>}
+                          </div>
+                          <div className="notif-item-actions">
+                            <Link
+                              to={`/notification/${n._id}`}
+                              className="notif-open"
+                              onClick={() => {
+                                handleMarkRead(n._id);
+                                setNotifOpen(false);
+                              }}
+                            >
+                              View
+                            </Link>
+                            {!n.read && (
+                              <button className="notif-read" onClick={() => handleMarkRead(n._id)}>
+                                Mark read
+                              </button>
+                            )}
+                            <button className="notif-delete" onClick={() => handleDeleteNotif(n)}>
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="avatar-container" onClick={toggleMenu}>
             {user ? (

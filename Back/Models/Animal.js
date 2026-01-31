@@ -26,6 +26,12 @@ const AnimalSchema = new mongoose.Schema(
     foster_duration: { type: String, default: "" },
     address: { type: String },
     img: { type: String },
+    // If the animal was added by a logged-in user, store who submitted it
+    submitted_by: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    // Track if animal has been adopted
+    adopted: { type: Boolean, default: false, index: true },
+    adopted_by: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    adopted_at: { type: Date, default: null },
   },
   { timestamps: true }
 );

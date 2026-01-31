@@ -39,8 +39,27 @@ const Profile = () => {
   const [deleteUsername, setDeleteUsername] = useState("");
   const [favorites, setFavorites] = useState([]);
   const [favoritesLoading, setFavoritesLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("profile"); // "profile" or "candidates"
+  const [activeTab, setActiveTab] = useState("profile"); // "profile" | "candidates" | "notifications" | "admin"
   const [removedFavorites, setRemovedFavorites] = useState([]); // Track recently removed for undo
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsUnread, setNotificationsUnread] = useState(0);
+
+  // Admin panel state
+  const [adminSubTab, setAdminSubTab] = useState("dashboard"); // "dashboard" | "animals" | "users" | "applications" | "notifications"
+  const [adminStats, setAdminStats] = useState(null);
+  const [adminAnimals, setAdminAnimals] = useState([]);
+  const [adminAnimalsLoading, setAdminAnimalsLoading] = useState(false);
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [adminUsersLoading, setAdminUsersLoading] = useState(false);
+  const [adminApplications, setAdminApplications] = useState([]);
+  const [adminApplicationsLoading, setAdminApplicationsLoading] = useState(false);
+  const [adminNotifications, setAdminNotifications] = useState([]);
+  const [adminNotificationsLoading, setAdminNotificationsLoading] = useState(false);
+  
+  // Animal editing state
+  const [editingAnimal, setEditingAnimal] = useState(null);
+  const [animalEditForm, setAnimalEditForm] = useState({});
 
   useEffect(() => {
     fetchUserProfile();
@@ -49,8 +68,317 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       fetchFavorites();
+      fetchNotifications();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user && user.role === "admin" && activeTab === "admin") {
+      if (adminSubTab === "dashboard" && !adminStats) {
+        fetchAdminStats();
+      } else if (adminSubTab === "animals" && adminAnimals.length === 0 && !adminAnimalsLoading) {
+        fetchAdminAnimals();
+      } else if (adminSubTab === "users" && adminUsers.length === 0 && !adminUsersLoading) {
+        fetchAdminUsers();
+        } else if (adminSubTab === "applications" && adminApplications.length === 0 && !adminApplicationsLoading) {
+          fetchAdminApplications();
+        } else if (adminSubTab === "notifications" && adminNotifications.length === 0 && !adminNotificationsLoading) {
+          fetchAdminNotifications();
+        }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, activeTab, adminSubTab]);
+
+  const fetchAdminStats = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/admin/dashboard", {
+        withCredentials: true,
+      });
+      setAdminStats(res.data);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+    }
+  };
+
+  const fetchAdminAnimals = async () => {
+    try {
+      setAdminAnimalsLoading(true);
+      const res = await axios.get("http://localhost:5000/api/admin/animals", {
+        withCredentials: true,
+      });
+      setAdminAnimals(res.data.animals || []);
+    } catch (error) {
+      console.error("Error fetching admin animals:", error);
+      toast.error("Failed to load animals");
+    } finally {
+      setAdminAnimalsLoading(false);
+    }
+  };
+
+  const fetchAdminUsers = async () => {
+    try {
+      setAdminUsersLoading(true);
+      const res = await axios.get("http://localhost:5000/api/admin/users", {
+        withCredentials: true,
+      });
+      setAdminUsers(res.data.users || []);
+    } catch (error) {
+      console.error("Error fetching admin users:", error);
+      toast.error("Failed to load users");
+    } finally {
+      setAdminUsersLoading(false);
+    }
+  };
+
+  const fetchAdminApplications = async () => {
+    try {
+      setAdminApplicationsLoading(true);
+      const res = await axios.get("http://localhost:5000/api/admin/applications", {
+        withCredentials: true,
+      });
+      setAdminApplications(res.data.applications || []);
+    } catch (error) {
+      console.error("Error fetching admin applications:", error);
+      toast.error("Failed to load applications");
+    } finally {
+      setAdminApplicationsLoading(false);
+    }
+  };
+
+  const handleUpdateUserRole = async (userId, newRole) => {
+    try {
+      await axios.put(
+        `http://localhost:5000/api/admin/users/${userId}/role`,
+        { role: newRole },
+        { withCredentials: true }
+      );
+      toast.success("User role updated");
+      fetchAdminUsers();
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to update role");
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
+        withCredentials: true,
+      });
+      toast.success("User deleted");
+      fetchAdminUsers();
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to delete user");
+    }
+  };
+
+  const handleDeleteAnimal = async (animalId) => {
+    if (!window.confirm("Are you sure you want to delete this animal?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/admin/animals/${animalId}`, {
+        withCredentials: true,
+      });
+      toast.success("Animal deleted");
+      fetchAdminAnimals();
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to delete animal");
+    }
+  };
+
+  const handleToggleAdopted = async (animalId) => {
+    try {
+      await axios.put(
+        `http://localhost:5000/api/admin/animals/${animalId}/toggle-adopted`,
+        {},
+        { withCredentials: true }
+      );
+      toast.success("Animal status updated");
+      fetchAdminAnimals();
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to update animal");
+    }
+  };
+
+  const fetchAdminNotifications = async () => {
+    try {
+      setAdminNotificationsLoading(true);
+      const res = await axios.get("http://localhost:5000/api/admin/notifications", {
+        withCredentials: true,
+      });
+      setAdminNotifications(res.data.notifications || []);
+    } catch (error) {
+      console.error("Error fetching admin notifications:", error);
+      toast.error("Failed to load notifications");
+    } finally {
+      setAdminNotificationsLoading(false);
+    }
+  };
+
+  const handleDeleteNotificationAdmin = async (notificationId) => {
+    if (!window.confirm("Are you sure you want to delete this notification?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/admin/notifications/${notificationId}`, {
+        withCredentials: true,
+      });
+      toast.success("Notification deleted");
+      fetchAdminNotifications();
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to delete notification");
+    }
+  };
+
+  const handleDeleteApplication = async (applicationId) => {
+    if (!window.confirm("Are you sure you want to delete this application?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/admin/applications/${applicationId}`, {
+        withCredentials: true,
+      });
+      toast.success("Application deleted");
+      fetchAdminApplications();
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to delete application");
+    }
+  };
+
+  const handleEditAnimal = (animal) => {
+    setEditingAnimal(animal._id);
+    setAnimalEditForm({
+      name: animal.name || "",
+      category: animal.category || "",
+      type: animal.type || "",
+      animal: animal.animal || "",
+      breed: animal.breed || "",
+      gender: animal.gender || "Unknown",
+      age: animal.age || "",
+      medical_condition: animal.medical_condition || "",
+      tameness_level: animal.tameness_level || "",
+      adoption_type: animal.adoption_type || "",
+      foster_duration: animal.foster_duration || "",
+      address: animal.address || "",
+      img: animal.img || "",
+      life_expectancy_captivity: animal.life_expectancy?.captivity || "",
+      life_expectancy_wild: animal.life_expectancy?.wild || "",
+      care_food: animal.care_requirements?.food || "",
+      care_attention: animal.care_requirements?.attention || "",
+      care_yearly_cost: animal.care_requirements?.yearly_cost || "",
+      care_vet_cost: animal.care_requirements?.average_vet_cost || "",
+      care_insurance: animal.care_requirements?.insurance || "",
+    });
+  };
+
+  const handleSaveAnimalEdit = async () => {
+    try {
+      await axios.put(
+        `http://localhost:5000/api/admin/animals/${editingAnimal}`,
+        animalEditForm,
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      toast.success("Animal updated successfully");
+      setEditingAnimal(null);
+      setAnimalEditForm({});
+      fetchAdminAnimals();
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to update animal");
+    }
+  };
+
+  const handleCancelAnimalEdit = () => {
+    setEditingAnimal(null);
+    setAnimalEditForm({});
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      setNotificationsLoading(true);
+      const res = await axios.get("http://localhost:5000/api/notifications/me", {
+        withCredentials: true,
+      });
+      setNotifications(res.data.notifications || []);
+      setNotificationsUnread(res.data.unreadCount || 0);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  const markNotificationRead = async (id) => {
+    try {
+      await axios.put(
+        `http://localhost:5000/api/notifications/me/${id}/read`,
+        {},
+        { withCredentials: true }
+      );
+      fetchNotifications();
+    } catch (error) {
+      console.error("Error marking notification read:", error);
+    }
+  };
+
+  const deleteNotification = async (notif) => {
+    try {
+      await axios.put(
+        `http://localhost:5000/api/notifications/me/${notif._id}/delete`,
+        {},
+        { withCredentials: true }
+      );
+      fetchNotifications();
+
+      const UndoToast = ({ closeToast }) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          <span>Notification removed.</span>
+          <button
+            onClick={async () => {
+              closeToast();
+              try {
+                await axios.put(
+                  `http://localhost:5000/api/notifications/me/${notif._id}/restore`,
+                  {},
+                  { withCredentials: true }
+                );
+                fetchNotifications();
+              } catch (e) {
+                // ignore
+              }
+            }}
+            style={{
+              padding: "4px 12px",
+              background: "white",
+              color: "#3bab7e",
+              border: "1px solid #3bab7e",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontWeight: "600",
+              fontSize: "0.9rem",
+            }}
+          >
+            Undo
+          </button>
+        </div>
+      );
+
+      toast.success(<UndoToast />, { autoClose: 8000, closeOnClick: false });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      toast.error("Failed to remove notification");
+    }
+  };
+
+  const markAllNotificationsRead = async () => {
+    try {
+      await axios.put(
+        "http://localhost:5000/api/notifications/me/read-all",
+        {},
+        { withCredentials: true }
+      );
+      fetchNotifications();
+    } catch (error) {
+      console.error("Error marking all notifications read:", error);
+    }
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -485,6 +813,29 @@ const Profile = () => {
               <span className="tab-badge">{favorites.length}</span>
             )}
           </button>
+          <button
+            className={`browser-tab ${activeTab === "notifications" ? "active" : ""}`}
+            onClick={() => setActiveTab("notifications")}
+          >
+            <span className="tab-icon">🔔</span>
+            <span className="tab-title">Notifications</span>
+            {notificationsUnread > 0 && (
+              <span className="tab-badge">{notificationsUnread}</span>
+            )}
+          </button>
+          {user && user.role === "admin" && (
+            <button
+              className={`browser-tab ${activeTab === "admin" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("admin");
+                setAdminSubTab("dashboard");
+                if (!adminStats) fetchAdminStats();
+              }}
+            >
+              <span className="tab-icon">⚙️</span>
+              <span className="tab-title">Admin Panel</span>
+            </button>
+          )}
         </div>
         {activeTab === "profile" && !editing && (
           <button className="edit-button" onClick={() => setEditing(true)}>
@@ -1022,6 +1373,453 @@ const Profile = () => {
                     })}
                   </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "notifications" && (
+          <div className="tab-content notifications-tab-content">
+            <div className="form-section notifications-section">
+              <div className="notifications-header-row">
+                <h2 className="section-title">Notifications</h2>
+                <button
+                  type="button"
+                  className="mark-all-read-btn"
+                  onClick={markAllNotificationsRead}
+                  disabled={notificationsUnread === 0 || notificationsLoading}
+                >
+                  Mark all read
+                </button>
+              </div>
+
+              {notificationsLoading ? (
+                <div className="loading-favorites">Loading notifications...</div>
+              ) : notifications.length === 0 ? (
+                <div className="no-favorites">
+                  <p>You don’t have any notifications yet.</p>
+                </div>
+              ) : (
+                <div className="notifications-list">
+                  {notifications.map((n) => (
+                    <div key={n._id} className={`notification-item ${n.read ? "" : "unread"}`}>
+                      <div className="notification-main">
+                        <div className="notification-title">{n.title}</div>
+                        {n.message && <div className="notification-message">{n.message}</div>}
+                        <div className="notification-meta">
+                          {n.createdAt ? new Date(n.createdAt).toLocaleString() : ""}
+                        </div>
+                      </div>
+
+                      <div className="notification-actions">
+                        <Link
+                          to={`/notification/${n._id}`}
+                          className="notification-open"
+                          onClick={() => markNotificationRead(n._id)}
+                        >
+                          View
+                        </Link>
+                        {!n.read && (
+                          <button
+                            type="button"
+                            className="notification-read-btn"
+                            onClick={() => markNotificationRead(n._id)}
+                          >
+                            Mark read
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="notification-delete-btn"
+                          onClick={() => deleteNotification(n)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "admin" && user && user.role === "admin" && (
+          <div className="tab-content admin-tab-content">
+            <div className="admin-panel-section">
+              <div className="admin-subtabs">
+                <button
+                  className={`admin-subtab ${adminSubTab === "dashboard" ? "active" : ""}`}
+                  onClick={() => {
+                    setAdminSubTab("dashboard");
+                    if (!adminStats) fetchAdminStats();
+                  }}
+                >
+                  📊 Dashboard
+                </button>
+                <button
+                  className={`admin-subtab ${adminSubTab === "animals" ? "active" : ""}`}
+                  onClick={() => {
+                    setAdminSubTab("animals");
+                    if (adminAnimals.length === 0) fetchAdminAnimals();
+                  }}
+                >
+                  🐾 Animals
+                </button>
+                <button
+                  className={`admin-subtab ${adminSubTab === "users" ? "active" : ""}`}
+                  onClick={() => {
+                    setAdminSubTab("users");
+                    if (adminUsers.length === 0 && !adminUsersLoading) {
+                      fetchAdminUsers();
+                    }
+                  }}
+                >
+                  👥 Users
+                </button>
+                <button
+                  className={`admin-subtab ${adminSubTab === "applications" ? "active" : ""}`}
+                  onClick={() => {
+                    setAdminSubTab("applications");
+                    if (adminApplications.length === 0) fetchAdminApplications();
+                  }}
+                >
+                  📝 Applications
+                </button>
+                <button
+                  className={`admin-subtab ${adminSubTab === "notifications" ? "active" : ""}`}
+                  onClick={() => {
+                    setAdminSubTab("notifications");
+                    if (adminNotifications.length === 0) fetchAdminNotifications();
+                  }}
+                >
+                  🔔 Notifications
+                </button>
+              </div>
+
+              <div className="admin-content-area">
+                {adminSubTab === "dashboard" && adminStats && (
+                  <div className="admin-dashboard">
+                    <div className="stats-grid">
+                      <div className="stat-card">
+                        <div className="stat-label">Total Users</div>
+                        <div className="stat-value">{adminStats.users.total}</div>
+                      </div>
+                      <div className="stat-card">
+                        <div className="stat-label">Total Animals</div>
+                        <div className="stat-value">{adminStats.animals.total}</div>
+                        <div className="stat-sub">
+                          {adminStats.animals.available} available, {adminStats.animals.adopted} adopted
+                        </div>
+                      </div>
+                      <div className="stat-card">
+                        <div className="stat-label">Applications</div>
+                        <div className="stat-value">{adminStats.applications.total}</div>
+                        <div className="stat-sub">
+                          {adminStats.applications.pending} pending, {adminStats.applications.accepted} accepted,{" "}
+                          {adminStats.applications.rejected} rejected
+                        </div>
+                      </div>
+                      <div className="stat-card">
+                        <div className="stat-label">Notifications</div>
+                        <div className="stat-value">{adminStats.notifications.total}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {adminSubTab === "animals" && (
+                  <div className="admin-section">
+                    <h2 className="admin-section-title">All Animals</h2>
+                    {adminAnimalsLoading ? (
+                      <div className="admin-loading">Loading animals...</div>
+                    ) : (
+                      <div className="admin-table-wrapper">
+                        <table className="admin-table">
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                              <th>Category</th>
+                              <th>Type</th>
+                              <th>Status</th>
+                              <th>Submitted By</th>
+                              <th>Adopted By</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {adminAnimals.map((animal) => (
+                              <tr key={animal._id} className={animal.adopted ? "adopted-row" : ""}>
+                                {editingAnimal === animal._id ? (
+                                  <>
+                                    <td>
+                                      <input
+                                        type="text"
+                                        value={animalEditForm.name}
+                                        onChange={(e) => setAnimalEditForm({ ...animalEditForm, name: e.target.value })}
+                                        className="admin-edit-input"
+                                        placeholder="Name"
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        type="text"
+                                        value={animalEditForm.category}
+                                        onChange={(e) => setAnimalEditForm({ ...animalEditForm, category: e.target.value })}
+                                        className="admin-edit-input"
+                                        placeholder="Category"
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        type="text"
+                                        value={animalEditForm.type}
+                                        onChange={(e) => setAnimalEditForm({ ...animalEditForm, type: e.target.value })}
+                                        className="admin-edit-input"
+                                        placeholder="Type"
+                                      />
+                                    </td>
+                                    <td>
+                                      <span className={`status-badge ${animal.adopted ? "adopted" : "available"}`}>
+                                        {animal.adopted ? "Adopted" : "Available"}
+                                      </span>
+                                    </td>
+                                    <td>{animal.submitted_by?.user_name || "Guest"}</td>
+                                    <td>{animal.adopted_by?.user_name || "—"}</td>
+                                    <td>
+                                      <div className="admin-actions">
+                                        <button
+                                          className="admin-btn small"
+                                          onClick={handleSaveAnimalEdit}
+                                        >
+                                          Save
+                                        </button>
+                                        <button
+                                          className="admin-btn small"
+                                          onClick={handleCancelAnimalEdit}
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </>
+                                ) : (
+                                  <>
+                                    <td>
+                                      <Link to={`/animal/${animal._id}`} className="admin-link">
+                                        {animal.name || "Unnamed"}
+                                      </Link>
+                                    </td>
+                                    <td>{animal.category || "—"}</td>
+                                    <td>{animal.type || "—"}</td>
+                                    <td>
+                                      <span className={`status-badge ${animal.adopted ? "adopted" : "available"}`}>
+                                        {animal.adopted ? "Adopted" : "Available"}
+                                      </span>
+                                    </td>
+                                    <td>{animal.submitted_by?.user_name || "Guest"}</td>
+                                    <td>{animal.adopted_by?.user_name || "—"}</td>
+                                    <td>
+                                      <div className="admin-actions">
+                                        <button
+                                          className="admin-btn small"
+                                          onClick={() => handleEditAnimal(animal)}
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          className="admin-btn small"
+                                          onClick={() => handleToggleAdopted(animal._id)}
+                                        >
+                                          {animal.adopted ? "Mark Available" : "Mark Adopted"}
+                                        </button>
+                                        <button
+                                          className="admin-btn small danger"
+                                          onClick={() => handleDeleteAnimal(animal._id)}
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </>
+                                )}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {adminSubTab === "users" && (
+                  <div className="admin-section">
+                    <h2 className="admin-section-title">All Users</h2>
+                    {adminUsersLoading ? (
+                      <div className="admin-loading">Loading users...</div>
+                    ) : adminUsers.length === 0 ? (
+                      <div className="admin-loading">No users found.</div>
+                    ) : (
+                      <div className="admin-table-wrapper">
+                        <table className="admin-table">
+                          <thead>
+                            <tr>
+                              <th>Username</th>
+                              <th>Email</th>
+                              <th>Role</th>
+                              <th>Created</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {adminUsers.map((u) => (
+                              <tr key={u._id}>
+                                <td>{u.user_name}</td>
+                                <td>{u.email}</td>
+                                <td>
+                                  <select
+                                    value={u.role}
+                                    onChange={(e) => handleUpdateUserRole(u._id, e.target.value)}
+                                    className="role-select"
+                                  >
+                                    <option value="user">User</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="admin">Admin</option>
+                                  </select>
+                                </td>
+                                <td>{new Date(u.createdAt).toLocaleDateString()}</td>
+                                <td>
+                                  <button
+                                    className="admin-btn small danger"
+                                    onClick={() => handleDeleteUser(u._id)}
+                                    disabled={u._id === user?._id}
+                                  >
+                                    Delete
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {adminSubTab === "applications" && (
+                  <div className="admin-section">
+                    <h2 className="admin-section-title">All Applications</h2>
+                    {adminApplicationsLoading ? (
+                      <div className="admin-loading">Loading applications...</div>
+                    ) : (
+                      <div className="admin-table-wrapper">
+                        <table className="admin-table">
+                          <thead>
+                            <tr>
+                              <th>Animal</th>
+                              <th>Applicant</th>
+                              <th>Status</th>
+                              <th>Submitted</th>
+                              <th>Reviewed By</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {adminApplications.map((app) => (
+                              <tr key={app._id}>
+                                <td>
+                                  {app.animal ? (
+                                    <Link to={`/animal/${app.animal._id}`} className="admin-link">
+                                      {app.animal.name || "Unknown"}
+                                    </Link>
+                                  ) : (
+                                    "—"
+                                  )}
+                                </td>
+                                <td>{app.applicant_user?.user_name || app.full_name || "Guest"}</td>
+                                <td>
+                                  <span className={`status-badge ${app.status}`}>
+                                    {app.status || "submitted"}
+                                  </span>
+                                </td>
+                                <td>{new Date(app.createdAt).toLocaleDateString()}</td>
+                                <td>{app.reviewed_by?.user_name || "—"}</td>
+                                <td>
+                                  <div className="admin-actions">
+                                    {app.status === "submitted" && (
+                                      <Link to={`/review/${app._id}`} className="admin-btn small">
+                                        Review
+                                      </Link>
+                                    )}
+                                    <button
+                                      className="admin-btn small danger"
+                                      onClick={() => handleDeleteApplication(app._id)}
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {adminSubTab === "notifications" && (
+                  <div className="admin-section">
+                    <h2 className="admin-section-title">All Notifications</h2>
+                    {adminNotificationsLoading ? (
+                      <div className="admin-loading">Loading notifications...</div>
+                    ) : adminNotifications.length === 0 ? (
+                      <div className="admin-loading">No notifications found.</div>
+                    ) : (
+                      <div className="admin-table-wrapper">
+                        <table className="admin-table">
+                          <thead>
+                            <tr>
+                              <th>Recipient</th>
+                              <th>Title</th>
+                              <th>Message</th>
+                              <th>Type</th>
+                              <th>Created</th>
+                              <th>Read</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {adminNotifications.map((notif) => (
+                              <tr key={notif._id} className={notif.read ? "" : "unread"}>
+                                <td>{notif.recipient?.user_name || notif.recipient?.email || "Unknown"}</td>
+                                <td>{notif.title}</td>
+                                <td className="admin-message-cell">{notif.message || "—"}</td>
+                                <td>
+                                  <span className="status-badge">{notif.type || "general"}</span>
+                                </td>
+                                <td>{new Date(notif.createdAt).toLocaleDateString()}</td>
+                                <td>
+                                  <span className={`status-badge ${notif.read ? "accepted" : "submitted"}`}>
+                                    {notif.read ? "Read" : "Unread"}
+                                  </span>
+                                </td>
+                                <td>
+                                  <button
+                                    className="admin-btn small danger"
+                                    onClick={() => handleDeleteNotificationAdmin(notif._id)}
+                                  >
+                                    Delete
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

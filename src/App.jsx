@@ -11,6 +11,9 @@ import SubmitAnimal from "./Pages/SubmitAnimal/SubmitAnimal";
 import Layout from "./Components/Layout/Layout";
 import AnimalPage from "./Pages/AnimalPage/AnimalPage";
 import Profile from "./Pages/Profile/Profile";
+import Adoption from "./Pages/Adoption/Adoption";
+import ReviewApplication from "./Pages/ReviewApplication/ReviewApplication";
+import NotificationDetail from "./Pages/NotificationDetail/NotificationDetail";
 function App() {
   return (
     <>
@@ -27,6 +30,9 @@ function App() {
           <Route path="register" element={<Register />} />
           <Route path="profile" element={<Profile />} />
           <Route path="animal/:id" element= {<AnimalPage/>} />
+          <Route path="adoption/:id" element={<Adoption />} />
+          <Route path="review/:id" element={<ReviewApplication />} />
+          <Route path="notification/:id" element={<NotificationDetail />} />
         </Route>
       </Routes>
     </>

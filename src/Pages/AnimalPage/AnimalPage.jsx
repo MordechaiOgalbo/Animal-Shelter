@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./AnimalPage.css";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 
 const AnimalPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [animal, setAnimal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -259,6 +260,34 @@ const AnimalPage = () => {
             </div>
           </div>
         </div>
+
+        {user && (
+          <div className="adoption-cta">
+            <div className="adoption-cta-text">
+              <h2 className="adoption-cta-title">Ready to adopt?</h2>
+              <p className="adoption-cta-subtitle">
+                Fill out a quick application and we’ll contact you with next steps.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="adoption-cta-button"
+              onClick={() => navigate(`/adoption/${id}`)}
+            >
+              Start Adoption Application
+            </button>
+          </div>
+        )}
+        {!user && (
+          <div className="adoption-cta">
+            <div className="adoption-cta-text">
+              <h2 className="adoption-cta-title">Ready to adopt?</h2>
+              <p className="adoption-cta-subtitle">
+                Please <Link to="/login" style={{ color: "var(--primary)", fontWeight: "bold" }}>log in</Link> to submit an adoption application.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

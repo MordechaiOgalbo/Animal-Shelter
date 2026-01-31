@@ -3,6 +3,9 @@ import dotenv from "dotenv";
 import animalRouter from "./Routers/AnimalRoutes.js";
 import authRouter from "./Routers/AuthsRoutes.js";
 import userRouter from "./Routers/UserRoutes.js";
+import adoptionRouter from "./Routers/AdoptionRoutes.js";
+import notificationRouter from "./Routers/NotificationRoutes.js";
+import adminRouter from "./Routers/AdminRoutes.js";
 import cors from "cors";
 import mongoose from "mongoose";
 import path from "path";
@@ -43,6 +46,9 @@ app.get("/", (req, res) => {
 app.use("/api/animal", animalRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/adoption", adoptionRouter);
+app.use("/api/notifications", notificationRouter);
+app.use("/api/admin", adminRouter);
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
