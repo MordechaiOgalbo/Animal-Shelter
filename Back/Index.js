@@ -20,7 +20,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",                  // local frontend
-  "https://your-frontend-name.onrender.com" // Render frontend
+  "https://animal-shelter-2.onrender.com" // Render frontend
 ];
 
 app.use(cors({
