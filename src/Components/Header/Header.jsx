@@ -25,7 +25,7 @@ const Header = () => {
 
   const fetchUserData = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/user/me", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`, {
         withCredentials: true,
       });
       setUser(res.data);
@@ -39,7 +39,7 @@ const Header = () => {
   const fetchNotifications = async () => {
     if (!user) return;
     try {
-      const res = await axios.get("http://localhost:5000/api/notifications/me", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/notifications/me`, {
         withCredentials: true,
       });
       setNotifications(res.data.notifications || []);
@@ -92,7 +92,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:5000/api/auth/logout", {}, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, {
         withCredentials: true,
       });
     } catch (error) {
@@ -109,7 +109,7 @@ const Header = () => {
 
   const handleMarkRead = async (notifId) => {
     try {
-      await axios.put(`http://localhost:5000/api/notifications/me/${notifId}/read`, {}, { withCredentials: true });
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/notifications/me/${notifId}/read`, {}, { withCredentials: true });
       await fetchNotifications();
     } catch (e) {
       // ignore
@@ -119,7 +119,7 @@ const Header = () => {
   const handleDeleteNotif = async (notif) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/notifications/me/${notif._id}/delete`,
+        `${import.meta.env.VITE_API_URL}/api/notifications/me/${notif._id}/delete`,
         {},
         { withCredentials: true }
       );
@@ -133,7 +133,7 @@ const Header = () => {
               closeToast();
               try {
                 await axios.put(
-                  `http://localhost:5000/api/notifications/me/${notif._id}/restore`,
+                  `${import.meta.env.VITE_API_URL}/api/notifications/me/${notif._id}/restore`,
                   {},
                   { withCredentials: true }
                 );

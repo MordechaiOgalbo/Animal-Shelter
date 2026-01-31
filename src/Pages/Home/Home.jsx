@@ -10,7 +10,7 @@ const Home = () => {
   useEffect(() => {
     const fetchAnimals = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/animal");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/animal`);
         // Get the last 8 animals (most recently added)
         const animals = res.data || [];
         const last8 = animals.slice(-8).reverse(); // Reverse to show newest first

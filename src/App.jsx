@@ -14,6 +14,27 @@ import Profile from "./Pages/Profile/Profile";
 import Adoption from "./Pages/Adoption/Adoption";
 import ReviewApplication from "./Pages/ReviewApplication/ReviewApplication";
 import NotificationDetail from "./Pages/NotificationDetail/NotificationDetail";
+import axios from "axios";
+
+
+// Optional: intercept all requests to log info
+axios.interceptors.request.use((config) => {
+  console.log("Axios request to:", config.url);
+  console.log("withCredentials:", config.withCredentials);
+  console.log("Headers:", config.headers);
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+// Optional: intercept all responses
+axios.interceptors.response.use((response) => {
+  console.log("Axios response from:", response.config.url, "status:", response.status);
+  return response;
+}, (error) => {
+  console.error("Axios error:", error.response?.status, error.response?.data);
+  return Promise.reject(error);
+});
 function App() {
   return (
     <>

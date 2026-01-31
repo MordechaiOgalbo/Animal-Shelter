@@ -17,7 +17,7 @@ const ReviewApplication = () => {
   const fetchApplication = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5000/api/adoption/applications/${id}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/adoption/applications/${id}`, {
         withCredentials: true,
       });
       setApplication(res.data.application);
@@ -45,7 +45,7 @@ const ReviewApplication = () => {
     try {
       setDecisionLoading(true);
       await axios.put(
-        `http://localhost:5000/api/adoption/applications/${id}/decision`,
+        `${import.meta.env.VITE_API_URL}/api/adoption/applications/${id}/decision`,
         {
           decision,
           rejection_reason: rejectionReason,

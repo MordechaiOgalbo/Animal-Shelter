@@ -42,7 +42,7 @@ const Adoption = () => {
       if (!id) return;
       try {
         setLoadingAnimal(true);
-        const res = await axios.get(`http://localhost:5000/api/animal/${id}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/animal/${id}`);
         setAnimal(res.data);
       } catch (e) {
         setAnimal(null);
@@ -71,7 +71,7 @@ const Adoption = () => {
     if (!form.home_environment.trim()) return toast.error("Please describe your home environment.");
 
     try {
-      await axios.post(`http://localhost:5000/api/adoption/${id}/apply`, form, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/adoption/${id}/apply`, form, {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });

@@ -91,7 +91,7 @@ const Profile = () => {
 
   const fetchAdminStats = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/dashboard", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/dashboard`, {
         withCredentials: true,
       });
       setAdminStats(res.data);
@@ -103,7 +103,7 @@ const Profile = () => {
   const fetchAdminAnimals = async () => {
     try {
       setAdminAnimalsLoading(true);
-      const res = await axios.get("http://localhost:5000/api/admin/animals", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/animals`, {
         withCredentials: true,
       });
       setAdminAnimals(res.data.animals || []);
@@ -118,7 +118,7 @@ const Profile = () => {
   const fetchAdminUsers = async () => {
     try {
       setAdminUsersLoading(true);
-      const res = await axios.get("http://localhost:5000/api/admin/users", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
         withCredentials: true,
       });
       setAdminUsers(res.data.users || []);
@@ -133,7 +133,7 @@ const Profile = () => {
   const fetchAdminApplications = async () => {
     try {
       setAdminApplicationsLoading(true);
-      const res = await axios.get("http://localhost:5000/api/admin/applications", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/applications`, {
         withCredentials: true,
       });
       setAdminApplications(res.data.applications || []);
@@ -148,7 +148,7 @@ const Profile = () => {
   const handleUpdateUserRole = async (userId, newRole) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/users/${userId}/role`,
+        `${import.meta.env.VITE_API_URL}/api/admin/users/${userId}/role`,
         { role: newRole },
         { withCredentials: true }
       );
@@ -162,7 +162,7 @@ const Profile = () => {
   const handleDeleteUser = async (userId) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}`, {
         withCredentials: true,
       });
       toast.success("User deleted");
@@ -175,7 +175,7 @@ const Profile = () => {
   const handleDeleteAnimal = async (animalId) => {
     if (!window.confirm("Are you sure you want to delete this animal?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/admin/animals/${animalId}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/animals/${animalId}`, {
         withCredentials: true,
       });
       toast.success("Animal deleted");
@@ -188,7 +188,7 @@ const Profile = () => {
   const handleToggleAdopted = async (animalId) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/animals/${animalId}/toggle-adopted`,
+        `${import.meta.env.VITE_API_URL}/api/admin/animals/${animalId}/toggle-adopted`,
         {},
         { withCredentials: true }
       );
@@ -202,7 +202,7 @@ const Profile = () => {
   const fetchAdminNotifications = async () => {
     try {
       setAdminNotificationsLoading(true);
-      const res = await axios.get("http://localhost:5000/api/admin/notifications", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/notifications`, {
         withCredentials: true,
       });
       setAdminNotifications(res.data.notifications || []);
@@ -217,7 +217,7 @@ const Profile = () => {
   const handleDeleteNotificationAdmin = async (notificationId) => {
     if (!window.confirm("Are you sure you want to delete this notification?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/admin/notifications/${notificationId}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/notifications/${notificationId}`, {
         withCredentials: true,
       });
       toast.success("Notification deleted");
@@ -230,7 +230,7 @@ const Profile = () => {
   const handleDeleteApplication = async (applicationId) => {
     if (!window.confirm("Are you sure you want to delete this application?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/admin/applications/${applicationId}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/applications/${applicationId}`, {
         withCredentials: true,
       });
       toast.success("Application deleted");
@@ -269,7 +269,7 @@ const Profile = () => {
   const handleSaveAnimalEdit = async () => {
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/animals/${editingAnimal}`,
+        `${import.meta.env.VITE_API_URL}/api/admin/animals/${editingAnimal}`,
         animalEditForm,
         {
           headers: { "Content-Type": "application/json" },
@@ -293,7 +293,7 @@ const Profile = () => {
   const fetchNotifications = async () => {
     try {
       setNotificationsLoading(true);
-      const res = await axios.get("http://localhost:5000/api/notifications/me", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/notifications/me`, {
         withCredentials: true,
       });
       setNotifications(res.data.notifications || []);
@@ -308,7 +308,7 @@ const Profile = () => {
   const markNotificationRead = async (id) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/notifications/me/${id}/read`,
+        `${import.meta.env.VITE_API_URL}/api/notifications/me/${id}/read`,
         {},
         { withCredentials: true }
       );
@@ -321,7 +321,7 @@ const Profile = () => {
   const deleteNotification = async (notif) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/notifications/me/${notif._id}/delete`,
+        `${import.meta.env.VITE_API_URL}/api/notifications/me/${notif._id}/delete`,
         {},
         { withCredentials: true }
       );
@@ -335,7 +335,7 @@ const Profile = () => {
               closeToast();
               try {
                 await axios.put(
-                  `http://localhost:5000/api/notifications/me/${notif._id}/restore`,
+                  `${import.meta.env.VITE_API_URL}/api/notifications/me/${notif._id}/restore`,
                   {},
                   { withCredentials: true }
                 );
@@ -370,7 +370,7 @@ const Profile = () => {
   const markAllNotificationsRead = async () => {
     try {
       await axios.put(
-        "http://localhost:5000/api/notifications/me/read-all",
+        `${import.meta.env.VITE_API_URL}/api/notifications/me/read-all`,
         {},
         { withCredentials: true }
       );
@@ -382,7 +382,7 @@ const Profile = () => {
 
   const fetchUserProfile = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/user/me", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`, {
         withCredentials: true,
       });
       setUser(res.data);
@@ -478,7 +478,7 @@ const Profile = () => {
       };
 
       const res = await axios.put(
-        "http://localhost:5000/api/user/me",
+        `${import.meta.env.VITE_API_URL}/api/user/me`,
         updateData,
         {
           headers: {
@@ -538,7 +538,7 @@ const Profile = () => {
 
     try {
       await axios.put(
-        "http://localhost:5000/api/user/me/password",
+        `${import.meta.env.VITE_API_URL}/api/user/me/password`,
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
@@ -566,7 +566,7 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:5000/api/auth/logout", {}, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, {
         withCredentials: true,
       });
       localStorage.removeItem("user");
@@ -608,7 +608,7 @@ const Profile = () => {
       };
 
       const res = await axios.put(
-        "http://localhost:5000/api/user/me",
+        `${import.meta.env.VITE_API_URL}/api/user/me`,
         updateData,
         {
           headers: {
@@ -640,7 +640,7 @@ const Profile = () => {
 
     try {
       // Use POST instead of DELETE to ensure body is parsed correctly
-      await axios.post("http://localhost:5000/api/user/me/delete", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/user/me/delete`, {
         username: deleteUsername,
       }, {
         headers: {
@@ -662,7 +662,7 @@ const Profile = () => {
   const fetchFavorites = async () => {
     try {
       setFavoritesLoading(true);
-      const res = await axios.get("http://localhost:5000/api/user/me/favorites", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/me/favorites`, {
         withCredentials: true,
       });
       setFavorites(res.data.favorites || []);
@@ -684,7 +684,7 @@ const Profile = () => {
         ? { animalId, animalData, timestamp: Date.now() }
         : null;
       
-      await axios.delete("http://localhost:5000/api/user/me/favorites", {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/user/me/favorites`, {
         data: { animalId },
         headers: {
           "Content-Type": "application/json",
@@ -754,7 +754,7 @@ const Profile = () => {
 
   const handleUndoRemove = async (removedItem) => {
     try {
-      await axios.post("http://localhost:5000/api/user/me/favorites", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/user/me/favorites`, {
         animalId: removedItem.animalId,
       }, {
         headers: {

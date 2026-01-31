@@ -136,7 +136,7 @@ const SubmitAnimal = () => {
   useEffect(() => {
     const fetchAnimals = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/animal");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/animal`);
         setAnimals(res.data);
       } catch (err) {
         console.error("Failed to load animals for autocomplete");
@@ -251,7 +251,7 @@ const SubmitAnimal = () => {
       };
 
       const res = await axios.post(
-        "http://localhost:5000/api/animal",
+        `${import.meta.env.VITE_API_URL}/api/animal`,
         requestBody,
         {
           headers: {

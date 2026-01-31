@@ -14,7 +14,7 @@ const NotificationDetail = () => {
     const fetchNotification = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:5000/api/notifications/me/${id}`, {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/notifications/me/${id}`, {
           withCredentials: true,
         });
         setNotification(res.data.notification);

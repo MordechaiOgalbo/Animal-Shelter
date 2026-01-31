@@ -97,12 +97,12 @@ export const login = async (req, res) => {
     );
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: false, // Set to false for localhost development
-      sameSite: "lax",
-      maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 2 * 60 * 60 * 1000,
-      path: "/",
-    });
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production", // true on Render
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  maxAge: remember ? 7*24*60*60*1000 : 2*60*60*1000,
+  path: "/",
+});
 
     return res.status(200).json({
       message: `Welcome ${user.user_name}`,
@@ -123,12 +123,13 @@ export const login = async (req, res) => {
 
 export const logout = (req, res) => {
   try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: false, // Set to false for localhost development
-      sameSite: "lax",
-      path: "/",
-    });
+    res.cookie("token", token, {
+  httpOnly: true,
+  secure: true,         // must be true for HTTPS
+  sameSite: "none",     // allow cross-origin (frontend ↔ backend)
+  maxAge: remember ? 7*24*60*60*1000 : 2*60*60*1000,
+  path: "/",
+});
     res.status(200).json({ message: "Disconnected successfully" });
   } catch (error) {
     console.error(error);

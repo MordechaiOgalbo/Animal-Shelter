@@ -17,7 +17,7 @@ const AnimalPage = () => {
     const fetchAnimal = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:5000/api/animal/${id}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/animal/${id}`);
         setAnimal(res.data);
         setError(null);
       } catch (err) {
@@ -36,14 +36,14 @@ const AnimalPage = () => {
     // Check if user is logged in and fetch favorites
     const checkUserAndFavorites = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/user/me", {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`, {
           withCredentials: true,
         });
         setUser(res.data);
         
         // Check if animal is in favorites
         if (id) {
-          const favoritesRes = await axios.get("http://localhost:5000/api/user/me/favorites", {
+          const favoritesRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/me/favorites`, {
             withCredentials: true,
           });
           const favoriteIds = favoritesRes.data.favorites.map(fav => fav._id || fav);
@@ -64,7 +64,7 @@ const AnimalPage = () => {
     setFavoriteLoading(true);
     try {
       if (isFavorite) {
-        await axios.delete("http://localhost:5000/api/user/me/favorites", {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/user/me/favorites`, {
           data: { animalId: id },
           headers: {
             "Content-Type": "application/json",
@@ -74,7 +74,7 @@ const AnimalPage = () => {
         setIsFavorite(false);
         // toast.success("Removed from Adoption Candidates");
       } else {
-        await axios.post("http://localhost:5000/api/user/me/favorites", {
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/user/me/favorites`, {
           animalId: id,
         }, {
           headers: {

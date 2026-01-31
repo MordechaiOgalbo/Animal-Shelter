@@ -26,7 +26,7 @@ const AnimalCatalog = () => {
   useEffect(() => {
     const fetchAnimals = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/animal");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/animal`);
         setAnimals(res.data);
       } catch (err) {
         console.error("Failed to load animals");
@@ -39,13 +39,13 @@ const AnimalCatalog = () => {
     // Check if user is logged in and fetch favorites
     const checkUserAndFavorites = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/user/me", {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`, {
           withCredentials: true,
         });
         setUser(res.data);
         
         // Fetch favorites
-        const favoritesRes = await axios.get("http://localhost:5000/api/user/me/favorites", {
+        const favoritesRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/me/favorites`, {
           withCredentials: true,
         });
         const favoriteIds = favoritesRes.data.favorites.map(fav => fav._id || fav);
@@ -396,7 +396,7 @@ const AnimalCatalog = () => {
                 
                 try {
                   if (isFavorite) {
-                    await axios.delete("http://localhost:5000/api/user/me/favorites", {
+                    await axios.delete(`${import.meta.env.VITE_API_URL}/api/user/me/favorites`, {
                       data: { animalId: animal._id },
                       headers: {
                         "Content-Type": "application/json",
@@ -406,7 +406,7 @@ const AnimalCatalog = () => {
                     setFavorites(favorites.filter(id => id !== animal._id));
                     toast.success("Removed from Adoption Candidates");
                   } else {
-                    await axios.post("http://localhost:5000/api/user/me/favorites", {
+                    await axios.post(`${import.meta.env.VITE_API_URL}/api/user/me/favorites`, {
                       animalId: animal._id,
                     }, {
                       headers: {
